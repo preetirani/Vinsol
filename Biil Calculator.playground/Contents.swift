@@ -160,5 +160,4 @@ Cart.shared.remove(product: book1)
 Cart.shared.remove(product: book1)
 Cart.shared.cartItems[0].quantity
 Cart.shared.cartItems.count
-
 Cart.shared.generateBill()

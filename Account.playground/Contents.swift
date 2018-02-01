@@ -11,13 +11,13 @@ import UIKit
 class Customer {
     var name: String
     private static var currentAccountNo = 0
-    private var accountNo:Int = 0
-    private var balance: Double
+    let accountNo:Int
+    private(set) var balance: Double
     
     init(name: String) {
         self.name = name
         Customer.currentAccountNo += 1
-        accountNo = Customer.currentAccountNo
+        self.accountNo = Customer.currentAccountNo
         balance = 1000
     }
     
@@ -34,14 +34,6 @@ class Customer {
         balance -= availableAmount
         return (status: true, balance: availableAmount)
     }
-    
-    func checkAvailableBalance() -> Double {
-        return balance
-    }
-    
-    func getAccountNo() -> Int {
-        return accountNo
-    }
 }
 
 let customer1 = Customer(name: "Preeti")
@@ -49,16 +41,13 @@ let customer1 = Customer(name: "Preeti")
 let customer2 = Customer(name: "Ankit")
 let customer3 = Customer(name: "Sumit")
 
-
-customer1.getAccountNo()
-customer2.getAccountNo()
-customer3.getAccountNo()
+customer1.accountNo
+customer2.accountNo
+customer3.accountNo
 
 customer1.withdraw(amount: 10000)
-customer1.checkAvailableBalance()
+
 if customer1.withdraw(amount: 10000).status == false {
     print("Insufficient Balance")
 }
 customer1.deposit(amount: 100)
-customer1.checkAvailableBalance()
-customer2.checkAvailableBalance()
