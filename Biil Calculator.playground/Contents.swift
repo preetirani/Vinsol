@@ -2,75 +2,129 @@
 
 import UIKit
 
-/* There are pre-defined categories say book, food, medicine, chocolate, stationary etc..
-Category has the following attributes:
-- Name
-- Exempted from Sales tax: (Y/N)
-
-A product belongs to a category.
-Product would comprise of following attributes:
-- Name
-- Imported (Y/N)
-- Price
-- Category
-
-Following are the rules to calculate tax:
-a. Flat 10% sales tax is applicable on all items except for books, food and medicines
-b. Additional Import Duty of 5% is applicable on all imported items
-
-Store the customers choice of products & quantity in his shopping cart.
-Add following functions to the cart class:
-cart.add(product: p1) would increase the product quantity in the cart by 1
-similarly cart.remove() will do the opposite.
-
-Note: Cart would be a singleton class.
-
-Shopping cart should have a method to calculate the total inclusive of taxes.
-This method should print the itemised bill with each Product in the cart listed along with its name, price, qty & tax.
-Print the total in the last line rounded to the nearest integer. */
+extension Array where Element: Equatable {
+    mutating func remove(object: Element) {
+        if let index = index(of: object) {
+            remove(at: index)
+        }
+    }
+}
 
 enum CategoryType {
     case book, food, medicine, choclate, stationary
 }
 
-struct Category {
-    var name: CategoryType
-    var includeSalesTax: Bool
+class Category {
+    private let taxableCategories: [CategoryType] = [.choclate, .stationary]
+    private let name: CategoryType
+    
+    var isTaxable: Bool {
+        return taxableCategories.contains(name)
+    }
     
     init(name: CategoryType) {
         self.name = name
-        
-        switch name {
-        case .choclate, .stationary:
-            self.includeSalesTax = true
-        default:
-            self.includeSalesTax = false
-        }
+    }
+    
+    private static let all: [Category] = [
+        Category(name: .book),
+        Category(name: .food),
+        Category(name: .medicine),
+        Category(name: .choclate),
+        Category(name: .stationary)
+    ]
+    
+    static var book : Category {
+        return Category.all.first(where: {$0.name == .book})!
+    }
+    
+    static var food : Category {
+        return Category.all.first(where: {$0.name == .food})!
+    }
+    
+    static var medicine : Category {
+        return Category.all.first(where: {$0.name == .medicine})!
+    }
+    
+    static var choclate : Category {
+        return Category.all.first(where: {$0.name == .choclate})!
+    }
+    
+    static var stationary : Category {
+        return Category.all.first(where: {$0.name == .stationary})!
     }
 }
 
 class Product {
+    private static var currentProductId = 0
+    let ID: Int
     var name: String
     var isImported: Bool
-    var price: Double
+    private(set) var price: Double
     var category: Category
     
-    init(name: String, isImported: Bool, price: Double, categoryType: CategoryType) {
+    init(name: String, isImported: Bool, price: Double, category: Category) {
         self.name = name
         self.isImported = isImported
         self.price = price
-        self.category = Category(name: categoryType)
+        self.category = category
+        Product.currentProductId += 1
+        self.ID = Product.currentProductId
+    }
+}
+
+extension Product: Equatable {
+    public static func ==(lhs: Product, rhs: Product) -> Bool {
+        return lhs.ID == rhs.ID
     }
 }
 
 class CartItem {
     let product: Product
     var quantity: Int = 0
-    var tax: Double = 0.0
+    
+    var perUnitTax: Double {
+        var tax: Double = 0.0
+        let price = product.price
+        
+        if product.category.isTaxable {
+            tax = price * Constants.salesTax
+        }
+        
+        if product.isImported {
+            tax += price * Constants.additionalTax
+        }
+        return tax
+    }
+   
+    var tax: Double {
+        return perUnitTax * Double(quantity)
+    }
     
     init(product: Product, quantity: Int = 1) {
         self.product = product
         self.quantity = quantity
+    }
+    
+    func totalPrice(inclusiveOfTaxes: Bool) -> Double {
+        var totalPrice: Double = product.price *  Double(quantity)
+        if inclusiveOfTaxes {
+            totalPrice = totalPrice + tax
+        }
+        return totalPrice
+    }
+}
+
+extension CartItem: Equatable {
+    public static func ==(lhs: CartItem, rhs: CartItem) -> Bool {
+        return lhs.product.ID == rhs.product.ID
+    }
+}
+
+extension CartItem {
+    struct Constants {
+        static let salesTax = 0.10
+        static let additionalTax = 0.05
     }
 }
 
@@ -81,73 +135,42 @@ class Cart {
     private init() {}
     
     func add(product: Product) {
-        if let cartItem = cartItems.first(where: {$0.product.category.name == product.category.name && $0.product.name == product.name}) {
+        if let cartItem = cartItems.first(where: {$0.product.ID == product.ID}) {
             cartItem.quantity += 1
         } else {
-            cartItems.append(cartItem(withProduct: product))
+            cartItems.append(CartItem(product: product))
         }
     }
     
     func remove(product: Product) {
-        for (index, cartItem) in cartItems.enumerated() {
-            if cartItem.product.category.name == product.category.name && cartItem.product.name == product.name {
-                cartItem.quantity -= 1
-                if cartItem.quantity == 0 {
-                    cartItems.remove(at: index)
-                }
-                break
+        if let cartItem = cartItems.first(where: {$0.product.ID == product.ID}) {
+            cartItem.quantity -= 1
+            if cartItem.quantity == 0 {
+                cartItems.remove(object: cartItem)
             }
         }
     }
-   
-    /* this method should print the itemised bill with each Product in the cart listed along with its name, price, qty & tax.
-     * Print the total in the last line rounded to the nearest integer. */
+    
+    var totalPrice: Int {
+        let price = cartItems.reduce(0.0) { (result, cartItem) -> Double in
+            result + cartItem.totalPrice(inclusiveOfTaxes: true)
+        }
+        return Int(round(price))
+    }
     
     func generateBill() {
-        var totalCartPrice: Double = 0.0
         for cartItem in cartItems {
             print("** \(cartItem.product.name) **")
             print("Price : \(cartItem.product.price)  Quantity : \(cartItem.quantity) Tax : \(cartItem.tax)")
             print("----------------------------------------------------------------------------------------")
-            totalCartPrice += totalPrice(ofCartItem: cartItem, inclusiveOfTaxes: true)
         }
-        let totalPriceInInt = Int(round(totalCartPrice))
-        print("************ Total Price : \(totalPriceInInt) ************")
-    }
-    
-    
-    
-    private func cartItem(withProduct product: Product) -> CartItem {
-        let cartItem = CartItem(product: product)
-        var tax: Double = 0.0
-        if product.category.includeSalesTax {
-            tax = Constants.salesTax
-        }
-        
-        if product.isImported {
-            tax += Constants.additionalTax
-        }
-        cartItem.tax = tax
-        
-        return cartItem
-    }
-    
-    private func totalPrice(ofCartItem cartItem: CartItem, inclusiveOfTaxes: Bool) -> Double {
-        var totalPrice: Double = cartItem.product.price *  Double(cartItem.quantity)
-        if inclusiveOfTaxes {
-            totalPrice = totalPrice + (totalPrice * cartItem.tax)
-        }
-        return totalPrice
-    }
-  
-    struct Constants {
-        static let salesTax = 0.10
-        static let additionalTax = 0.05
+        print("************ Total Price : \(totalPrice) ************")
     }
 }
 
-let book1 = Product(name: "Ramayan", isImported: false, price: 100, categoryType: .book)
-let kitkat = Product(name: "Kitkat", isImported: true, price: 100, categoryType: .choclate)
+Product(name: "Comics", isImported: true, price: 30, category: Category.book)
+let book1 = Product(name: "Ramayan", isImported: false, price: 100, category: Category.book)
+let kitkat = Product(name: "Kitkat", isImported: true, price: 100, category: Category.choclate)
 Cart.shared.add(product: book1)
 Cart.shared.add(product: book1)
 Cart.shared.add(product: kitkat)
@@ -155,9 +178,11 @@ Cart.shared.add(product: kitkat)
 Cart.shared.add(product: book1)
 Cart.shared.cartItems[0].product.name
 Cart.shared.cartItems[0].quantity
-Cart.shared.remove(product: book1)
-Cart.shared.remove(product: book1)
-Cart.shared.remove(product: book1)
+//Cart.shared.remove(product: book1)
+//Cart.shared.remove(product: book1)
+//Cart.shared.remove(product: book1)
 Cart.shared.cartItems[0].quantity
 Cart.shared.cartItems.count
 Cart.shared.generateBill()
+Category.book.isTaxable
+

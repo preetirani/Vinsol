@@ -54,4 +54,4 @@ let rect2 = Rect(origin: Point(x: 5, y: 5), height: 20, width: 20)
 //rect2.origin = point //cannot change property if struct object is defined as let constant
 rect1.origin.x
 rect2.origin.y
-
+rect2.origin.y
