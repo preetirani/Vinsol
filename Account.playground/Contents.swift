@@ -27,7 +27,7 @@ class Customer {
     
     func withdraw(amount: Double) -> (status: Bool, balance: Double) {
         guard balance >= amount else {
-            return (false, 0.0)
+            return (false, balance)
         }
         balance -= amount
         return (status: true, balance: balance)
