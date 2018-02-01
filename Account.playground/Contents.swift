@@ -26,13 +26,11 @@ class Customer {
     }
     
     func withdraw(amount: Double) -> (status: Bool, balance: Double) {
-        guard balance > 0 else {
+        guard balance >= amount else {
             return (false, 0.0)
         }
-        
-        let availableAmount = min(amount, balance)
-        balance -= availableAmount
-        return (status: true, balance: availableAmount)
+        balance -= amount
+        return (status: true, balance: balance)
     }
 }
 
@@ -45,8 +43,8 @@ customer1.accountNo
 customer2.accountNo
 customer3.accountNo
 
-customer1.withdraw(amount: 10000)
-
+customer1.withdraw(amount: 900)
+customer1.withdraw(amount: 200)
 if customer1.withdraw(amount: 10000).status == false {
     print("Insufficient Balance")
 }
