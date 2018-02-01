@@ -45,7 +45,7 @@ customer3.accountNo
 
 customer1.withdraw(amount: 900)
 customer1.withdraw(amount: 200)
-if customer1.withdraw(amount: 10000).status == false {
+if !customer1.withdraw(amount: 10000).status {
     print("Insufficient Balance")
 }
 customer1.deposit(amount: 100)
