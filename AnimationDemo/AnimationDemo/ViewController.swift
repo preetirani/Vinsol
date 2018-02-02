@@ -13,20 +13,18 @@ class ViewController: UIViewController {
     @IBOutlet private weak var commentView: UIView!
     @IBOutlet private weak var titleLabel: UILabel!
     
-//    @IBOutlet private weak var overlay: UIView!
+    // Tracks all running animators
+    var runningAnimators = [UIViewPropertyAnimator]()
 
     private var initialCenter = CGPoint()
-//    private var animator: UIViewPropertyAnimator?
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        addGestureToCommentView()
-        //        let blurEffect = UIBlurEffect(style: .dark)
-        //        let blurView = UIVisualEffectView(effect: blurEffect)
-        //        blurView.frame = self.imageView.bounds
-        //        self.imageView.addSubview(blurView)
+        addPanGesture()
+
     }
     
-    private func addGestureToCommentView() {
+    private func addPanGesture() {
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(self.movingCommentView(_:)))
         commentView.addGestureRecognizer(panGesture)
     }
@@ -35,6 +33,13 @@ class ViewController: UIViewController {
         guard let piece = gestureRecognizer.view else {
             return
         }
+        
+//        switch gestureRecognizer.state {
+//        case .began:
+//
+//        default:
+//            return
+//        }
     }
     
     @objc func movingCommentView(_ gestureRecognizer : UIPanGestureRecognizer) {
@@ -103,3 +108,41 @@ class ViewController: UIViewController {
     }
 }
 
+extension ViewController {
+
+    // Perform all animations with animators if not already running
+    func animateTransitionIfNeeded(state: State, duration: TimeInterval) {
+        if runningAnimators.isEmpty {
+            let frameAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1, animations: {
+                self.commentView.frame = CGRect()
+            })
+        }
+    }
+    
+    // Starts transition if necessary or reverses it on tap
+    func animateOrReverseRunningTransition(state: State, duration: TimeInterval) {
+        
+    }
+    
+    // Starts transition if necessary and pauses on pan .begin
+    func startInteractiveTransition(state: State, duration: TimeInterval) {
+        
+    }
+    
+    // Scrubs transition on pan .changed
+    func updateInteractiveTransition(fractionComplete: CGFloat) {
+        
+    }
+    
+    // Continues or reverse transition on pan .ended
+    func continueInteractiveTransition(cancel: Bool) {
+        
+    }
+}
+
+extension ViewController {
+    enum State {
+        case expanded
+        case collapsed
+    }
+}
