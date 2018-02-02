@@ -168,7 +168,6 @@ class Cart {
     }
 }
 
-Product(name: "Comics", isImported: true, price: 30, category: Category.book)
 let book1 = Product(name: "Ramayan", isImported: false, price: 100, category: Category.book)
 let kitkat = Product(name: "Kitkat", isImported: true, price: 100, category: Category.choclate)
 Cart.shared.add(product: book1)
@@ -178,9 +177,9 @@ Cart.shared.add(product: kitkat)
 Cart.shared.add(product: book1)
 Cart.shared.cartItems[0].product.name
 Cart.shared.cartItems[0].quantity
-//Cart.shared.remove(product: book1)
-//Cart.shared.remove(product: book1)
-//Cart.shared.remove(product: book1)
+Cart.shared.remove(product: book1)
+Cart.shared.remove(product: book1)
+Cart.shared.remove(product: kitkat)
 Cart.shared.cartItems[0].quantity
 Cart.shared.cartItems.count
 Cart.shared.generateBill()
